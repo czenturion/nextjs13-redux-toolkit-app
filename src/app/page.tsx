@@ -1,34 +1,65 @@
 "use client";
 
-import { useGetUsersQuery } from "@/redux/services/userApi";
-import { decrement, increment, reset } from "@/redux/features/counterSlice";
+import { useGetCharactersQuery } from "@/redux/services/charactersApi";
+import {decrement, decrementByAmount, increment, incrementByAmount, reset} from "@/redux/features/counterSlice";
 import { useAppDispatch, useAppSelector } from "@/redux/hook";
+import {useEffect} from "react";
 
 export default function Home() {
     const count = useAppSelector((state) => state.counterReducer.value);
     const dispatch = useAppDispatch();
 
-    const { isLoading, isFetching, data, error } = useGetUsersQuery(null);
+    const { isLoading, isFetching, data, error } = useGetCharactersQuery({page: 1});
 
     return (
-        <main style={{maxWidth: 1200, marginInline: "auto", padding: 20}}>
-            <div style={{marginBottom: "4rem", textAlign: "center"}}>
-                <h4 style={{marginBottom: 16}}>{count}</h4>
-                <button onClick={() => dispatch(increment())}>increment</button>
-                <button
-                    onClick={() => dispatch(decrement())}
-                    style={{marginInline: 16}}
+        <main
+            style={{
+                maxWidth: 800,
+                marginInline: "auto",
+                padding: 20,
+                height: "100vh",
+            }}
+        >
+            <div
+                style={{
+                    marginBottom: "4rem",
+                    display: "flex",
+                    flexDirection: "column",
+                    textAlign: "center",
+                }}
+            >
+                <h4
+                    style={{marginBottom: 16}}
                 >
-                    decrement
-                </button>
-                <button onClick={() => dispatch(reset())}>reset</button>
+                    {count}
+                </h4>
+                <div
+                    style={{
+                        display: "flex",
+                        justifyContent: "center",
+                    }}
+                >
+                <div
+                    style={{
+                        display: "flex",
+                        justifyContent: "space-between",
+                        width: "250px",
+                    }}
+                >
+                    <button onClick={() => dispatch(increment())}>increment</button>
+                    <button onClick={() => dispatch(incrementByAmount(5))}>+5</button>
+                    <button onClick={() => dispatch(decrement())}>decrement</button>
+                    <button onClick={() => dispatch(decrementByAmount(5))}>-5</button>
+                    <button onClick={() => dispatch(reset())}>reset</button>
+                </div>
+                </div>
             </div>
             {
                 error ? (
                     <p>Oh no, there was an error</p>
                 ) : isLoading || isFetching ? (
-                    <p>Loading...</p>
-                ) : data ? (
+                    <p style={{display: "flex", justifyContent: "center"}}>Loading...</p>
+                ) : data.results.length > 1 ? (
                     <div
                         style={{
                             display: "grid",
@@ -37,7 +68,7 @@ export default function Home() {
                         }}
                     >
                         {
-                            data.map((user) => (
+                            data.results.map((user) => (
                                 <div
                                     key={user.id}
                                     style={{
@@ -46,7 +77,7 @@ export default function Home() {
                                     }}
                                 >
                                     <img
-                                        src={`https://robohash.org/${user.id}?set=set2&size=180x180`}
+                                        src={user.image}
                                         alt={user.name}
                                         style={{
                                             height: 180,
@@ -61,7 +92,34 @@ export default function Home() {
                             )
                         }
                     </div>
-                ) : null
+                ) : (
+                    <div>
+                        {
+                            data.results
+                            ? <div
+                                    key={data.id}
+                                    style={{
+                                        border: "1px solid #ccc",
+                                        textAlign: "center",
+                                    }}
+                                >
+                                    <img
+                                        src={`https://robohash.org/${data.id}?set=set2&size=180x180`}
+                                        alt={data.name}
+                                        style={{
+                                            height: 180,
+                                            width: 180
+                                        }}
+                                    />
+                                    <h3>
+                                        {data.name}
+                                    </h3>
+                                </div>
+                            : null
+                        }
+                    </div>
+                )
+
             }
         </main>
     )
